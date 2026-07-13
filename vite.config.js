@@ -1,10 +1,30 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+function copyAssetLinks() {
+  return {
+    name: "copy-assetlinks",
+    closeBundle() {
+      const src = path.resolve(__dirname, "public/.well-known/assetlinks.json");
+      const destDir = path.resolve(__dirname, "dist/.well-known");
+      if (fs.existsSync(src)) {
+        fs.mkdirSync(destDir, { recursive: true });
+        fs.copyFileSync(src, path.join(destDir, "assetlinks.json"));
+      }
+    },
+  };
+}
 
 export default defineConfig({
   plugins: [
     react(),
+    copyAssetLinks(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["icon-192.png", "icon-512.png"],
